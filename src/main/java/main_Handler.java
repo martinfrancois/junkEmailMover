@@ -11,6 +11,9 @@ import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.event.MessageCountAdapter;
+import javax.mail.event.MessageCountEvent;
+import javax.mail.event.MessageCountListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -65,7 +68,7 @@ public class main_Handler {
       junk.open(Folder.READ_WRITE);
       inbox.open(Folder.READ_WRITE);
 
-      boolean successful = moveMessages(junk, inbox, null);
+      boolean successful = moveMessages(junk, inbox, null, "[SPAM] ");
       LOGGER.info("Success: " + successful);
 
       store.close();
@@ -89,7 +92,7 @@ public class main_Handler {
    * Messages needs to belong to the "from" folder. If it is null, all messages will be used.
    * Returns true if successful, false if unsuccessful.
    */
-  private static boolean moveMessages(Folder from, Folder to, Message[] messages) throws MessagingException {
+  private static boolean moveMessages(Folder from, Folder to, Message[] messages, String subjectPrefix) throws MessagingException {
     // get counts before the operations
     int fromCount = from.getMessageCount();
     int toCount = to.getMessageCount();
@@ -101,6 +104,11 @@ public class main_Handler {
       LOGGER.trace("messages is null, moving all messages");
       // get all messages
       messages = from.getMessages();
+    }
+
+    // change subject
+    for (Message message : messages) {
+      message.setSubject(subjectPrefix + message.getSubject());
     }
 
     // copy the messages to the other folder
