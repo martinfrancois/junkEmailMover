@@ -154,9 +154,15 @@ public class main_Handler {
    */
   private static boolean deleteMessages(Folder folder, Message[] messages) throws MessagingException {
     int folderCount = folder.getMessageCount();
+
+    // flag all messages for deletion
     for (Message message : messages) {
       message.setFlag(Flags.Flag.DELETED, true);
     }
+
+    // delete messages
+    folder.expunge();
+
     // check if deletion was successful
     if (!checkAmount(folder, folderCount - messages.length)) {
       // deletion was not successful
