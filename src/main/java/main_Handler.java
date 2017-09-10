@@ -1,3 +1,4 @@
+import com.sun.mail.imap.IMAPFolder;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
@@ -63,19 +64,20 @@ public class main_Handler {
       LOGGER.trace("Connected!");
 
       //open the folders
-      Folder junk = store.getFolder("Junk");
-      Folder inbox = store.getFolder("Inbox");
+      IMAPFolder junk = (IMAPFolder) store.getFolder("Junk");
+      IMAPFolder inbox = (IMAPFolder) store.getFolder("Inbox");
       junk.open(Folder.READ_WRITE);
       inbox.open(Folder.READ_WRITE);
+      LOGGER.trace("Folders opened");
 
-      boolean successful = moveMessages(junk, inbox, null, "[SPAM] ");
+      boolean successful = moveMessages(junk, inbox, null);
       LOGGER.info("Success: " + successful);
 
       store.close();
     } catch (NoSuchProviderException nspe) {
-      LOGGER.error("NoSuchProviderException: " + nspe.getMessage());
+      LOGGER.error("NoSuchProviderException: " + nspe.toString());
     } catch (MessagingException me) {
-      LOGGER.error("MessagingException: " + me.getMessage());
+      LOGGER.error("MessagingException: " + me.toString());
     }
   }
 
@@ -92,23 +94,17 @@ public class main_Handler {
    * Messages needs to belong to the "from" folder. If it is null, all messages will be used.
    * Returns true if successful, false if unsuccessful.
    */
-  private static boolean moveMessages(Folder from, Folder to, Message[] messages, String subjectPrefix) throws MessagingException {
+  private static boolean moveMessages(Folder from, Folder to, Message[] messages) throws MessagingException {
     // get counts before the operations
     int fromCount = from.getMessageCount();
     int toCount = to.getMessageCount();
     LOGGER.trace("BEFORE - from: " + fromCount + " to: " + toCount);
-
 
     // get a list of javamail messages as an array of messages
     if(messages == null) {
       LOGGER.trace("messages is null, moving all messages");
       // get all messages
       messages = from.getMessages();
-    }
-
-    // change subject
-    for (Message message : messages) {
-      message.setSubject(subjectPrefix + message.getSubject());
     }
 
     // copy the messages to the other folder
