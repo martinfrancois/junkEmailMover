@@ -11,11 +11,16 @@ import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Created by François Martin on 10.09.2017.
  */
 public class main_Handler {
+
+  private static final Logger LOGGER =
+      LogManager.getLogger(main_Handler.class.getName());
 
   public static void main(String[] args) {
     String host = args[0];
@@ -30,12 +35,14 @@ public class main_Handler {
   }
 
   private static void moveSpam(String host, String username, String password, String provider, Properties prop) {
+    LOGGER.trace("Trying to connect to host: " + host + " with user: " + username);
     try {
       //Connect to the server
       Session session = Session.getInstance(prop);
       //session.setDebug(true);
       Store store = session.getStore(provider);
       store.connect(host, username, password);
+      LOGGER.trace("Connected!");
 
       //open the folders
       Folder junk = store.getFolder("Junk");
@@ -44,14 +51,13 @@ public class main_Handler {
       inbox.open(Folder.READ_WRITE);
 
       boolean successful = moveMessages(junk, inbox, null);
-      System.out.println("Success?: " + successful);
+      LOGGER.info("Success: " + successful);
 
       store.close();
     } catch (NoSuchProviderException nspe) {
-      System.err.println("invalid provider name");
+      LOGGER.error("NoSuchProviderException: " + nspe.getMessage());
     } catch (MessagingException me) {
-      System.err.println("messaging exception");
-      me.printStackTrace();
+      LOGGER.error("MessagingException: " + me.getMessage());
     }
   }
 
@@ -72,9 +78,12 @@ public class main_Handler {
     // get counts before the operations
     int fromCount = from.getMessageCount();
     int toCount = to.getMessageCount();
+    LOGGER.trace("BEFORE - from: " + fromCount + " to: " + toCount);
+
 
     // get a list of javamail messages as an array of messages
     if(messages == null) {
+      LOGGER.trace("messages is null, moving all messages");
       // get all messages
       messages = from.getMessages();
     }
@@ -84,12 +93,12 @@ public class main_Handler {
 
     int newToCount = to.getMessageCount();
     if(newToCount != toCount + messages.length) {
-      System.out.println("ERROR! Target folder used to have " + toCount + " messages, now has " + newToCount + " messages and should have " + (toCount + messages.length) + " messages.");
+      LOGGER.warn("Target folder used to have " + toCount + " messages, now has " + newToCount + " messages but should have " + (toCount + messages.length) + " messages.");
       return false;
     } else {
       int newFromCount = deleteMessages(from, messages);
       if (newFromCount != fromCount - messages.length) {
-        System.out.println("ERROR! Source folder used to have " + fromCount + " messages, now has " + newFromCount + " messages and should have " + (fromCount - messages.length) + " messages.");
+        LOGGER.error("Source folder used to have " + fromCount + " messages, now has " + newFromCount + " messages but should have " + (fromCount - messages.length) + " messages.");
         return false;
       }
     }
