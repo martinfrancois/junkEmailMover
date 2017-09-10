@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.mail.Address;
 import javax.mail.Flags;
@@ -109,34 +110,57 @@ public class main_Handler {
 
     // copy the messages to the other folder
     from.copyMessages(messages, to);
+    LOGGER.trace("Copied messages");
 
-    int newToCount = to.getMessageCount();
-    if(newToCount != toCount + messages.length) {
-      LOGGER.warn("Target folder used to have " + toCount + " messages, now has " + newToCount + " messages but should have " + (toCount + messages.length) + " messages.");
+    // check if the messages have been successfully copied over to the target folder
+    if(!checkAmount(to, toCount + messages.length)) {
+      // copy was not successful, abort
+      LOGGER.warn("Target folder used to have " + toCount + " messages, now has " + to.getMessageCount() + " messages but should have " + (toCount + messages.length) + " messages.");
       return false;
     } else {
-      int newFromCount = deleteMessages(from, messages);
-      if (newFromCount != fromCount - messages.length) {
-        LOGGER.error("Source folder used to have " + fromCount + " messages, now has " + newFromCount + " messages but should have " + (fromCount - messages.length) + " messages.");
+      // copy was successful, delete from source folder
+      LOGGER.trace("Messages were copied successfully");
+      deleteMessages(from, messages);
+      // check if deletion was successful
+      if (!checkAmount(from, fromCount - messages.length)) {
+        // deletion was not successful
+        LOGGER.error("Source folder used to have " + fromCount + " messages, now has " + from.getMessageCount() + " messages but should have " + (fromCount - messages.length) + " messages.");
         return false;
       }
     }
-
+    LOGGER.trace("Messages were deleted successfully");
     return true;
+  }
+
+  private static boolean checkAmount(Folder folder, int expected) throws MessagingException {
+    int threshold = 20;
+    int attempt = 0;
+    int actual = -1;
+    do {
+      attempt++;
+      actual = folder.getMessageCount();
+      LOGGER.trace("Attempt: " + attempt + ", Expected messages: " + expected + " Actual messages: " + actual);
+      try {
+        TimeUnit.SECONDS.sleep(1);
+      } catch (InterruptedException e) {
+        // interrupted
+      }
+    } while(attempt < threshold && (actual != expected));
+    return attempt != threshold;
   }
 
   /**
    *
    * @param folder
    * @param messages
-   * @return the amount of messages that are now present after deletion.
+   * @return messages after expunge
    * @throws MessagingException
    */
-  private static int deleteMessages(Folder folder, Message[] messages) throws MessagingException {
+  private static Message[] deleteMessages(Folder folder, Message[] messages) throws MessagingException {
     for (Message message : messages) {
       message.setFlag(Flags.Flag.DELETED, true);
     }
-    return folder.expunge().length;
+    return folder.expunge();
   }
 
 }
