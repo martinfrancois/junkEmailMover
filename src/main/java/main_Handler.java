@@ -120,16 +120,12 @@ public class main_Handler {
     } else {
       // copy was successful, delete from source folder
       LOGGER.trace("Messages were copied successfully");
-      deleteMessages(from, messages);
-      // check if deletion was successful
-      if (!checkAmount(from, fromCount - messages.length)) {
-        // deletion was not successful
-        LOGGER.error("Source folder used to have " + fromCount + " messages, now has " + from.getMessageCount() + " messages but should have " + (fromCount - messages.length) + " messages.");
-        return false;
+      if(deleteMessages(from, messages)) {
+        LOGGER.trace("Messages were deleted successfully");
+        return true;
       }
     }
-    LOGGER.trace("Messages were deleted successfully");
-    return true;
+    return false;
   }
 
   private static boolean checkAmount(Folder folder, int expected) throws MessagingException {
@@ -153,14 +149,21 @@ public class main_Handler {
    *
    * @param folder
    * @param messages
-   * @return messages after expunge
+   * @return true if successful
    * @throws MessagingException
    */
-  private static Message[] deleteMessages(Folder folder, Message[] messages) throws MessagingException {
+  private static boolean deleteMessages(Folder folder, Message[] messages) throws MessagingException {
+    int folderCount = folder.getMessageCount();
     for (Message message : messages) {
       message.setFlag(Flags.Flag.DELETED, true);
     }
-    return folder.expunge();
+    // check if deletion was successful
+    if (!checkAmount(folder, folderCount - messages.length)) {
+      // deletion was not successful
+      LOGGER.error("Source folder used to have " + folderCount + " messages, now has " + folder.getMessageCount() + " messages but should have " + (folderCount - messages.length) + " messages.");
+      return false;
+    }
+    return true;
   }
 
 }
