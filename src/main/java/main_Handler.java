@@ -1,21 +1,29 @@
 import com.sun.mail.imap.IMAPFolder;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.mail.Address;
+import javax.mail.BodyPart;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.Transport;
 import javax.mail.event.MessageCountAdapter;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,55 +34,62 @@ public class main_Handler {
 
   private static final Logger LOGGER =
       LogManager.getLogger(main_Handler.class.getName());
+  public static final int AMOUNT_ARGUMENTS = 4;
 
   public static void main(String[] args) {
-    if (args.length % 3 != 0) {
+    if (args.length % AMOUNT_ARGUMENTS != 0) {
       LOGGER.error(
           "Incorrect number of arguments found (" + args.length + "). " +
-          "Please use a combination of host, username and password, separated by a space character. " +
-          "Number of arguments must be a multiple of 3");
+          "Number of arguments must be a multiple of " + AMOUNT_ARGUMENTS);
     } else {
       String host;
+      String smtp;
       String username;
       String password;
-      String provider = "imap";
 
-      int numOfAccounts = args.length / 3;
+      int numOfAccounts = args.length / AMOUNT_ARGUMENTS;
       LOGGER.trace(numOfAccounts + " accounts");
       for (int i = 0; i < numOfAccounts; i++) {
         LOGGER.trace("Current account: " + (i+1));
-        host = args[0+(3*i)];
-        username = args[1+(3*i)];
-        password = args[2+(3*i)];
-        Properties prop = new Properties();
-        prop.setProperty("mail.imap.ssl.enable", "true");
-        moveSpam(host, username, password, provider, prop);
+        host = args[0+(AMOUNT_ARGUMENTS*i)];
+        smtp = args[1+(AMOUNT_ARGUMENTS*i)];
+        username = args[2+(AMOUNT_ARGUMENTS*i)];
+        password = args[3+(AMOUNT_ARGUMENTS*i)];
+        moveSpam(host, smtp, username, password);
       }
     }
 
   }
 
-  private static void moveSpam(String host, String username, String password, String provider, Properties prop) {
+  private static void moveSpam(String host, String smtp, String username, String password) {
     LOGGER.info("Trying to connect to host: " + host + " with user: " + username);
     try {
-      //Connect to the server
-      Session session = Session.getInstance(prop);
-      //session.setDebug(true);
-      Store store = session.getStore(provider);
-      store.connect(host, username, password);
-      LOGGER.trace("Connected!");
+      Properties propImap = new Properties();
+      propImap.setProperty("mail.imap.ssl.enable", "true");
+
+      propImap.put("mail.smtp.auth", "true");
+
+      Session sessionImap = Session.getInstance(propImap);
+      Store storeImap = sessionImap.getStore("imap");
+      storeImap.connect(host, username, password);
+      LOGGER.info("IMAP connected");
+
+      Properties propSmtp = new Properties();
+      propSmtp.put("mail.smtp.starttls.enable", "true");
+      propSmtp.put("mail.smtp.host", smtp);
+      Session sessionSmtp = Session.getInstance(propSmtp);
 
       //open the folders
-      IMAPFolder junk = (IMAPFolder) store.getFolder("Junk");
-      IMAPFolder inbox = (IMAPFolder) store.getFolder("Inbox");
+      IMAPFolder junk = (IMAPFolder) storeImap.getFolder("Junk");
+      IMAPFolder inbox = (IMAPFolder) storeImap.getFolder("Inbox");
       junk.open(Folder.READ_WRITE);
       inbox.open(Folder.READ_WRITE);
       LOGGER.trace("Folders opened");
 
-      boolean successful = moveMessages(junk, inbox, null);
+      boolean successful = moveMessages(junk, inbox, null, sessionSmtp, username, password);
       LOGGER.info("Success: " + successful);
 
-      store.close();
+      storeImap.close();
     } catch (NoSuchProviderException nspe) {
       LOGGER.error("NoSuchProviderException: " + nspe.toString());
     } catch (MessagingException me) {
@@ -95,7 +110,7 @@ public class main_Handler {
    * Messages needs to belong to the "from" folder. If it is null, all messages will be used.
    * Returns true if successful, false if unsuccessful.
    */
-  private static boolean moveMessages(Folder from, Folder to, Message[] messages) throws MessagingException {
+  private static boolean moveMessages(Folder from, Folder to, Message[] messages, Session session, String username, String password) throws MessagingException {
     // get counts before the operations
     int fromCount = from.getMessageCount();
     int toCount = to.getMessageCount();
@@ -106,6 +121,11 @@ public class main_Handler {
       LOGGER.trace("messages is null, moving all messages");
       // get all messages
       messages = from.getMessages();
+    }
+
+    // forward messages
+    for (Message message : messages) {
+      forwardEmail(message, session, username, password);
     }
 
     // copy the messages to the other folder
@@ -171,5 +191,37 @@ public class main_Handler {
     }
     return true;
   }
+
+  private static void forwardEmail(Message message, Session session, String username, String password) throws MessagingException {
+    // Get all the information from the message
+    String from = InternetAddress.toString(message.getFrom());
+    String subject = message.getSubject();
+    Date sent = message.getSentDate();
+    LOGGER.trace("From: " + from + ", Subject: " + subject + ", Date: " + sent);
+
+    // compose the message to forward
+    Message message2 = new MimeMessage(session);
+    message2.setSubject("[SPAM] " + subject);
+    message2.setFrom(new InternetAddress(from));
+    message2.addRecipient(Message.RecipientType.TO,
+        new InternetAddress("***REMOVED***"));
+    message2.setSentDate(sent);
+    message2.setReplyTo(message.getReplyTo());
+
+    // Create your new message part
+    BodyPart messageBodyPart = new MimeBodyPart();
+    messageBodyPart.setDataHandler(message.getDataHandler());
+
+    // Create a multi-part to combine the parts
+    Multipart multipart = new MimeMultipart();
+    multipart.addBodyPart(messageBodyPart);
+
+    // Associate multi-part with message
+    message2.setContent(multipart);
+
+    // Send message
+    Transport.send(message2, username, password);
+  }
+
 
 }
