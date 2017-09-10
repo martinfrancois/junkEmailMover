@@ -194,7 +194,7 @@ public class main_Handler {
 
   private static void forwardEmail(Message message, Session session, String username, String password) throws MessagingException {
     // Get all the information from the message
-    String from = InternetAddress.toString(message.getFrom());
+    String from = username;
     String subject = message.getSubject();
     Date sent = message.getSentDate();
     LOGGER.trace("From: " + from + ", Subject: " + subject + ", Date: " + sent);
