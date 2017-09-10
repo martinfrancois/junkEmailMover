@@ -23,19 +23,34 @@ public class main_Handler {
       LogManager.getLogger(main_Handler.class.getName());
 
   public static void main(String[] args) {
-    String host = args[0];
-    String username = args[1];
-    String password = args[2];
-    String provider = "imap";
+    if (args.length % 3 != 0) {
+      LOGGER.error(
+          "Incorrect number of arguments found (" + args.length + "). " +
+          "Please use a combination of host, username and password, separated by a space character. " +
+          "Number of arguments must be a multiple of 3");
+    } else {
+      String host;
+      String username;
+      String password;
+      String provider = "imap";
 
-    Properties prop = new Properties();
-    prop.setProperty("mail.imap.ssl.enable", "true");
+      int numOfAccounts = args.length / 3;
+      LOGGER.trace(numOfAccounts + " accounts");
+      for (int i = 0; i < numOfAccounts; i++) {
+        LOGGER.trace("Current account: " + (i+1));
+        host = args[0+(3*i)];
+        username = args[1+(3*i)];
+        password = args[2+(3*i)];
+        Properties prop = new Properties();
+        prop.setProperty("mail.imap.ssl.enable", "true");
+        moveSpam(host, username, password, provider, prop);
+      }
+    }
 
-    moveSpam(host, username, password, provider, prop);
   }
 
   private static void moveSpam(String host, String username, String password, String provider, Properties prop) {
-    LOGGER.trace("Trying to connect to host: " + host + " with user: " + username);
+    LOGGER.info("Trying to connect to host: " + host + " with user: " + username);
     try {
       //Connect to the server
       Session session = Session.getInstance(prop);
