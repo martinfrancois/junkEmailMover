@@ -1,3 +1,5 @@
+package martinfrancois;
+
 import com.sun.mail.imap.IMAPFolder;
 import java.util.Date;
 import java.util.Properties;
