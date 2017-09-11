@@ -1,12 +1,5 @@
 import static org.junit.Assert.assertEquals;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import org.junit.Test;
 
 /**
@@ -19,7 +12,7 @@ public class SecurePreferencesTest {
   @Test
   public void test() {
     SecurePreferences pref = new SecurePreferences();
-    pref.saveSecretKey();
+    pref.resetSecretKey();
     pref.savePref(key, dataToEncrypt);
     assertEquals(dataToEncrypt, pref.loadPref(key));
   }

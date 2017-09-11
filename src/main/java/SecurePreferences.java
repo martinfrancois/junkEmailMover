@@ -46,7 +46,7 @@ public class SecurePreferences {
     prefs.putByteArray(key + IV_SUFFIX, iv);
   }
 
-  public void saveSecretKey() {
+  public void resetSecretKey() {
     SecretKey secretKey = generateSecretKey();
     String encodedKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
     prefs.put(PREF_KEY, encodedKey);
@@ -60,7 +60,7 @@ public class SecurePreferences {
       try {
         secretKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
       } catch (IllegalArgumentException e) {
-        saveSecretKey();
+        resetSecretKey();
         loadSecretKey();
       }
     }
@@ -93,7 +93,6 @@ public class SecurePreferences {
     } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException | NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException e) {
       LOGGER.error(e.getMessage());
     }
-
   }
 
   private String decrypt(SecretKey secretKey, String toDecrypt, byte[] iv) {
