@@ -26,6 +26,7 @@ public class main_Handler {
 
   private static final Logger LOGGER =
       LogManager.getLogger(main_Handler.class.getName());
+
   public static final int AMOUNT_ARGUMENTS = 4;
 
   public static void main(String[] args) {
@@ -34,33 +35,47 @@ public class main_Handler {
           "Incorrect number of arguments found (" + args.length + "). " +
           "Number of arguments must be a multiple of " + AMOUNT_ARGUMENTS);
     } else {
-      String host;
-      String smtp;
-      String username;
-      String password;
+
 
       int numOfAccounts = args.length / AMOUNT_ARGUMENTS;
       LOGGER.trace(numOfAccounts + " accounts");
       for (int i = 0; i < numOfAccounts; i++) {
         LOGGER.trace("Current account: " + (i+1));
-        host = args[0+(AMOUNT_ARGUMENTS*i)];
-        smtp = args[1+(AMOUNT_ARGUMENTS*i)];
-        username = args[2+(AMOUNT_ARGUMENTS*i)];
-        password = args[3+(AMOUNT_ARGUMENTS*i)];
-        moveSpam(host, smtp, username, password);
+
+        String hostImap = args[0+(AMOUNT_ARGUMENTS*i)];
+        String hostSmtp = args[1+(AMOUNT_ARGUMENTS*i)];
+        String username = args[2+(AMOUNT_ARGUMENTS*i)];
+        String password = args[3+(AMOUNT_ARGUMENTS*i)];
+
+        Connection imap = new Connection(hostImap, username, password);
+        Connection smtp = new Connection(hostSmtp, username, password);
+
+        moveSpam(imap, smtp);
       }
     }
 
   }
 
-  private static void moveSpam(String host, String smtp, String username, String password) {
+  private static class Connection {
+    String host;
+    String username;
+    String password;
+    Properties prop;
+    Session session;
+    Store store;
+
+    public Connection(String host, String username, String password){
+      this.host = host;
+      this.username = username;
+      this.password = password;
+    }
+  }
+
+  private static void moveSpam(Connection imap, Connection smtp) {
     LOGGER.info("Trying to connect to host: " + host + " with user: " + username);
     try {
       Properties propImap = new Properties();
       propImap.setProperty("mail.imap.ssl.enable", "true");
-
-      propImap.put("mail.smtp.auth", "true");
-
       Session sessionImap = Session.getInstance(propImap);
       Store storeImap = sessionImap.getStore("imap");
       storeImap.connect(host, username, password);
