@@ -130,6 +130,7 @@ public class main_Handler {
       // get all messages
       messages = from.getMessages();
     }
+    LOGGER.info("Moving " + messages.length + " messages...");
 
     if (copyMessages(from, to, messages)) {
       boolean success = true;
