@@ -124,6 +124,13 @@ public class main_Handler {
    * Returns true if successful, false if unsuccessful.
    */
   private static boolean moveMessages(Folder from, Folder to, Message[] messages, Settings settings) throws MessagingException {
+    // get a list of javamail messages as an array of messages
+    if (messages == null) {
+      LOGGER.trace("messages is null, copying all messages");
+      // get all messages
+      messages = from.getMessages();
+    }
+
     if (copyMessages(from, to, messages)) {
       boolean success = true;
       if (settings.recipient.length() > 0) {
@@ -150,13 +157,6 @@ public class main_Handler {
     int fromCount = from.getMessageCount();
     int toCount = to.getMessageCount();
     LOGGER.trace("BEFORE - from: " + fromCount + " to: " + toCount);
-
-    // get a list of javamail messages as an array of messages
-    if (messages == null) {
-      LOGGER.trace("messages is null, copying all messages");
-      // get all messages
-      messages = from.getMessages();
-    }
 
     // copy the messages to the other folder
     from.copyMessages(messages, to);
