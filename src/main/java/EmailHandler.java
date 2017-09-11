@@ -22,11 +22,11 @@ import org.apache.logging.log4j.Logger;
 /**
  * Created by François Martin on 10.09.2017.
  */
-public class main_Handler {
+public class EmailHandler {
 
   public static final int AMOUNT_ARGUMENTS = 4;
   private static final Logger LOGGER =
-      LogManager.getLogger(main_Handler.class.getName());
+      LogManager.getLogger(EmailHandler.class.getName());
 
   public static void main(String[] args) {
     int numOfAccounts = 0;
