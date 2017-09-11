@@ -1,6 +1,7 @@
 import com.sun.mail.imap.IMAPFolder;
 import java.util.Date;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import javax.mail.BodyPart;
 import javax.mail.Flags;
@@ -24,9 +25,10 @@ import org.apache.logging.log4j.Logger;
  */
 public class EmailHandler {
 
-  public static final int AMOUNT_ARGUMENTS = 4;
+  public static final int AMOUNT_ARGUMENTS = 3;
   private static final Logger LOGGER =
       LogManager.getLogger(EmailHandler.class.getName());
+  private static final SecurePreferences pref = new SecurePreferences();
 
   public static void main(String[] args) {
     int numOfAccounts = 0;
@@ -51,7 +53,17 @@ public class EmailHandler {
         String hostImap = args[0 + (AMOUNT_ARGUMENTS * i)];
         String hostSmtp = args[1 + (AMOUNT_ARGUMENTS * i)];
         String username = args[2 + (AMOUNT_ARGUMENTS * i)];
-        String password = args[3 + (AMOUNT_ARGUMENTS * i)];
+        String password = pref.loadPref(username);
+        if (password.length() == 0) {
+          LOGGER.trace("Password not found");
+          System.out.println("Please enter password for user: " + username);
+          Scanner in = new Scanner(System.in);
+          password = in.nextLine().trim();
+          pref.savePref(username, password);
+          LOGGER.trace("Password saved");
+        } else{
+          LOGGER.trace("Password found");
+        }
 
         Connection imap = new Connection(hostImap, username, password);
         Connection smtp = new Connection(hostSmtp, username, password);

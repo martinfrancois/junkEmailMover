@@ -35,6 +35,9 @@ public class SecurePreferences {
   public String loadPref(String key) {
     loadSecretKey();
     encrypted = prefs.get(key + VALUE_SUFFIX, "");
+    if (encrypted.length() == 0) {
+      return "";
+    }
     iv = prefs.getByteArray(key + IV_SUFFIX, null);
     return decrypt(secretKey, encrypted, iv);
   }
