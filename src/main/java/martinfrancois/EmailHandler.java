@@ -19,6 +19,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -112,6 +113,9 @@ public class EmailHandler {
     imap.prop = new Properties();
     imap.prop.setProperty("mail.imap.ssl.enable", "true");
     imap.session = Session.getInstance(imap.prop);
+    if (LOGGER.getLevel().equals(Level.TRACE)) {
+      imap.session.setDebug(true);
+    }
     imap.store = imap.session.getStore("imap");
     imap.store.connect(imap.host, imap.username, imap.password);
     LOGGER.info("IMAP connected");
@@ -121,6 +125,9 @@ public class EmailHandler {
     smtp.prop.put("mail.smtp.starttls.enable", "true");
     smtp.prop.put("mail.smtp.host", smtp.host);
     smtp.session = Session.getInstance(smtp.prop);
+    if (LOGGER.getLevel().equals(Level.TRACE)) {
+      smtp.session.setDebug(true);
+    }
   }
 
   private static void printFolderList(Store store) throws MessagingException {
