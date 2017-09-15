@@ -150,7 +150,7 @@ public class EmailHandler {
       boolean success = true;
       if (settings.recipient.length() > 0) {
         for (Message message : messages) {
-          if (!forwardMessage(message, settings)) {
+          if (success && !forwardMessage(message, settings)) {
             success = false;
           }
         }
@@ -180,6 +180,7 @@ public class EmailHandler {
     // check if the messages have been successfully copied over to the target folder
     if (checkAmount(to, toCount + messages.length)) {
       // copy was successful, delete from source folder
+      LOGGER.trace("AFTER - from: " + from.getMessageCount() + " to: " + to.getMessageCount());
       LOGGER.trace("Messages were copied successfully");
       return true;
     } else {
@@ -213,6 +214,8 @@ public class EmailHandler {
    * @throws MessagingException
    */
   private static boolean deleteMessages(Folder folder, Message[] messages) throws MessagingException {
+    LOGGER.trace("Deleting messages...");
+
     int folderCount = folder.getMessageCount();
 
     // flag all messages for deletion
@@ -234,6 +237,7 @@ public class EmailHandler {
   }
 
   private static boolean forwardMessage(Message message, Settings settings) {
+    LOGGER.trace("Forwarding Messages...");
     try {
       // Get all the information from the message
       String from = settings.smtp.username;
