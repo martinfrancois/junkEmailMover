@@ -250,7 +250,7 @@ public class EmailHandler {
       String from = settings.smtp.username;
       String subject = message.getSubject();
       Date sent = message.getSentDate();
-      LOGGER.trace("From: " + from + ", Subject: " + subject + ", Date: " + sent);
+      LOGGER.trace("From: " + message.getFrom() + ", Subject: " + subject + ", Date: " + sent);
 
       // compose the message to forward
       Message message2 = new MimeMessage(settings.smtp.session);
