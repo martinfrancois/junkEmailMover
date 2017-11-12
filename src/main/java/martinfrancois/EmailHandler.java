@@ -262,7 +262,7 @@ public class EmailHandler {
       String subject = message.getSubject();
       Date sent = message.getSentDate();
       LOGGER.trace("From: " + message.getFrom() + ", Subject: " + subject + ", Date: " + sent);
-      LOGGER_EMAILS.info(message.getFrom()); // log all email addresses to a file
+      LOGGER_EMAILS.info(message.getFrom().toString()); // log all email addresses to a file
 
       // compose the message to forward
       Message message2 = new MimeMessage(settings.smtp.session);
