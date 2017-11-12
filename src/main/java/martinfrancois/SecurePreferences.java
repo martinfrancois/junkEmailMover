@@ -57,7 +57,7 @@ public class SecurePreferences {
       prefs.clear();
       resetSecretKey();
     } catch (BackingStoreException e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error("Error while trying to clear preferences", e);
     }
 
   }
@@ -87,7 +87,7 @@ public class SecurePreferences {
     try {
       keyGen = KeyGenerator.getInstance("AES");
     } catch (NoSuchAlgorithmException e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error("Error during generation of key!", e);
     }
     keyGen.init(AES_KEYLENGTH);
     return keyGen.generateKey();
@@ -120,7 +120,7 @@ public class SecurePreferences {
           .doFinal(Base64.getDecoder().decode(toDecrypt));
       return new String(byteDecryptedText);
     } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException | NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error("Error during decryption of key", e);
     }
     return null;
   }

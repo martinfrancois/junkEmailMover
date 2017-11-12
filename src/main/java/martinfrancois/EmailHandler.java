@@ -281,7 +281,7 @@ public class EmailHandler {
       // Send message
       Transport.send(message2, settings.smtp.username, settings.smtp.password);
     } catch (MessagingException e) {
-      LOGGER.error("MessagingException: " + e.getMessage());
+      LOGGER.error("MessagingException", e);
       return false;
     }
     LOGGER.trace("Message successfully forwarded");
