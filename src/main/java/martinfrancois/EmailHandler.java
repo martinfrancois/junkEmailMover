@@ -1,5 +1,6 @@
 package martinfrancois;
 
+import com.google.common.base.Throwables;
 import com.sun.mail.imap.IMAPFolder;
 import java.util.Date;
 import java.util.Properties;
@@ -32,6 +33,7 @@ public class EmailHandler {
   private static final Logger LOGGER =
       LogManager.getLogger(EmailHandler.class.getName());
   private static final Logger LOGGER_EMAILS = LogManager.getLogger("Emails");
+  private static final Logger LOGGER_EXCEPTION = LogManager.getLogger("Exception");
   private static final SecurePreferences pref = new SecurePreferences();
 
   public static void main(String[] args) {
@@ -96,8 +98,10 @@ public class EmailHandler {
       settings.imap.store.close();
     } catch (NoSuchProviderException nspe) {
       LOGGER.error("NoSuchProviderException: " + nspe.toString());
+      LOGGER_EXCEPTION.debug(Throwables.getStackTraceAsString(nspe));
     } catch (MessagingException me) {
       LOGGER.error("MessagingException: " + me.toString());
+      LOGGER_EXCEPTION.debug(Throwables.getStackTraceAsString(me));
       // was connection closed because of invalid credentials?
       if (me.toString().contains("Remote host closed connection during handshake")) {
         pref.resetPrefs();
@@ -281,7 +285,8 @@ public class EmailHandler {
       // Send message
       Transport.send(message2, settings.smtp.username, settings.smtp.password);
     } catch (MessagingException e) {
-      LOGGER.error("MessagingException", e);
+      LOGGER.error("MessagingException: " + e.toString());
+      LOGGER_EXCEPTION.debug(Throwables.getStackTraceAsString(e));
       return false;
     }
     LOGGER.trace("Message successfully forwarded");

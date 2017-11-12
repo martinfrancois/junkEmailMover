@@ -22,6 +22,9 @@
             <PatternLayout pattern="%msg%n"/>
         </File>
 
+        <File name="StackTrace" fileName="${path}/junkMoverStackTrace.log">
+            <PatternLayout pattern="${appenderPatternLayout}"/>
+        </File>
 
     </Appenders>
     <Loggers>
@@ -31,6 +34,9 @@
         </Root>
         <Logger name="Emails" level="all" additivity="false">
             <AppenderRef ref="Data"/>
+        </Logger>
+        <Logger name="Exception" level="debug" additivity="false">
+            <AppenderRef ref="StackTrace"/>
         </Logger>
     </Loggers>
 </Configuration>
