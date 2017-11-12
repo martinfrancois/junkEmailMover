@@ -124,7 +124,7 @@ public class EmailHandler {
     if (LOGGER.getLevel().equals(Level.TRACE)) {
       imap.session.setDebug(true);
     }
-    imap.store = imap.session.getStore("imap");
+    imap.store = imap.session.getStore("imaps");
     imap.store.connect(imap.host, imap.username, imap.password);
     LOGGER.info("IMAP connected");
 
