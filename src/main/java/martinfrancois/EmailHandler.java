@@ -43,6 +43,7 @@ public class EmailHandler {
     // if no input is given - clear preferences
     if (args.length == 0) {
       pref.resetPrefs();
+      LOGGER.info("Preferences cleared");
     }
 
     if (args.length % AMOUNT_ARGUMENTS == 0) {
