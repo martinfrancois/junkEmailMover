@@ -120,7 +120,6 @@ public class EmailHandler {
   private static void connect(Connection imap, Connection smtp) throws MessagingException {
     // connect IMAP
     imap.prop = new Properties();
-    imap.prop.setProperty("mail.imap.ssl.enable", "true");
     imap.session = Session.getInstance(imap.prop);
     if (LOGGER.getLevel().equals(Level.TRACE)) {
       imap.session.setDebug(true);
