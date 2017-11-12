@@ -39,6 +39,12 @@ public class EmailHandler {
   public static void main(String[] args) {
     int numOfAccounts = 0;
     String recipient = "";
+
+    // if no input is given - clear preferences
+    if (args.length == 0) {
+      pref.resetPrefs();
+    }
+
     if (args.length % AMOUNT_ARGUMENTS == 0) {
       // without recipient
       numOfAccounts = args.length / AMOUNT_ARGUMENTS;
@@ -102,10 +108,6 @@ public class EmailHandler {
     } catch (MessagingException me) {
       LOGGER.error("MessagingException: " + me.toString());
       LOGGER_EXCEPTION.debug(Throwables.getStackTraceAsString(me));
-      // was connection closed because of invalid credentials?
-      if (me.toString().contains("Remote host closed connection during handshake")) {
-        pref.resetPrefs();
-      }
     }
   }
 
