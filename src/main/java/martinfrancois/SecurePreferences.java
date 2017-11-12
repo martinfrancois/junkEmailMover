@@ -5,6 +5,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -49,6 +50,16 @@ public class SecurePreferences {
     encrypt(secretKey, value);
     prefs.put(key + VALUE_SUFFIX, encrypted);
     prefs.putByteArray(key + IV_SUFFIX, iv);
+  }
+
+  public void resetPrefs(){
+    try {
+      prefs.clear();
+      resetSecretKey();
+    } catch (BackingStoreException e) {
+      LOGGER.error(e.getMessage());
+    }
+
   }
 
   public void resetSecretKey() {

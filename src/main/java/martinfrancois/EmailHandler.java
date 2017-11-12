@@ -97,6 +97,10 @@ public class EmailHandler {
       LOGGER.error("NoSuchProviderException: " + nspe.toString());
     } catch (MessagingException me) {
       LOGGER.error("MessagingException: " + me.toString());
+      // was connection closed because of invalid credentials?
+      if (me.toString().contains("Remote host closed connection during handshake")) {
+        pref.resetPrefs();
+      }
     }
   }
 
