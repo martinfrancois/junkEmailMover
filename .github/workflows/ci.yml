@@ -13,22 +13,29 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
-    name: build
+  test:
+    name: test (Java ${{ matrix.java }})
     runs-on: ubuntu-latest
+    strategy:
+      # The point of the matrix is to learn which Java versions work. fail-fast
+      # would cancel the remaining legs as soon as one broke and hide that answer
+      # for every version after the first failure.
+      fail-fast: false
+      matrix:
+        # Every version listed here was observed to pass `mvn -B verify`; see the
+        # support table in README.md. The lowest entry is also the release level
+        # maven-compiler-plugin targets in pom.xml.
+        java: ["8", "11", "17", "21", "25"]
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # maven-compiler-plugin in pom.xml is configured with source/target 1.8. Keep this
-      # java-version and that configuration in step; renovate.json groups them so they
-      # are always proposed together.
-      - name: Set up Java 8
+      - name: Set up Java ${{ matrix.java }}
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
-          java-version: "8"
+          java-version: ${{ matrix.java }}
           cache: maven
       - name: Verify
         run: mvn -B verify
@@ -36,6 +43,34 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: coverage
+          # One artifact per leg. upload-artifact rejects a second upload under a
+          # name that already exists, so the legs cannot share one.
+          name: coverage-java-${{ matrix.java }}
           if-no-files-found: ignore
           path: target/site/jacoco
+
+  # The branch ruleset requires a status check whose context is exactly "build".
+  # Turning the old single "build" job into a matrix would have renamed its
+  # contexts to "build (8)", "build (11)", ... and the required check would have
+  # matched nothing, leaving the branch ungated. This job keeps the "build"
+  # context in existence and carries the matrix result into it.
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    needs: [test]
+    # Without always() this job is skipped whenever a leg fails, and a skipped
+    # required check does not block a merge: the branch would silently go green
+    # on a broken build. always() runs it regardless, and the step below decides.
+    if: always()
+    steps:
+      - name: Require every Java version to have passed
+        env:
+          # For a matrix job this is the aggregate: "success" only when every leg
+          # succeeded, otherwise "failure", "cancelled" or "skipped".
+          RESULT: ${{ needs.test.result }}
+        run: |
+          echo "Matrix result: ${RESULT}"
+          if [ "${RESULT}" != "success" ]; then
+            echo "::error::At least one Java version did not pass (matrix result: ${RESULT})."
+            exit 1
+          fi
