@@ -5,8 +5,12 @@
     "helpers:pinGitHubActionDigests",
     ":rebaseStalePrs"
   ],
-  "reviewers": ["martinfrancois"],
-  "labels": ["dependencies"],
+  "reviewers": [
+    "martinfrancois"
+  ],
+  "labels": [
+    "dependencies"
+  ],
   "rangeStrategy": "replace",
   "pinDigests": true,
   "prConcurrentLimit": 0,
@@ -19,17 +23,23 @@
   },
   "dependencyDashboardApproval": false,
   "separateMajorMinor": true,
-  "separateMultipleMajor": true,
+  "separateMultipleMajor": false,
   "vulnerabilityAlerts": {
     "enabled": true,
-    "labels": ["security"]
+    "labels": [
+      "security"
+    ]
   },
   "customManagers": [
     {
       "customType": "regex",
       "description": "The minimum language level maven-compiler-plugin targets. The maven manager reads plugin versions but not plugin configuration. There is deliberately no companion manager for .github/workflows: the java-version input is now ${{ matrix.java }}, and the matrix itself is a hand-maintained list of the versions CI was observed to pass on, not a single version that can be bumped.",
-      "managerFilePatterns": ["/(^|/)pom\\.xml$/"],
-      "matchStrings": ["<release>(?<currentValue>[^<]+)</release>"],
+      "managerFilePatterns": [
+        "/(^|/)pom\\.xml$/"
+      ],
+      "matchStrings": [
+        "<release>(?<currentValue>[^<]+)</release>"
+      ],
       "depNameTemplate": "java",
       "datasourceTemplate": "java-version",
       "versioningTemplate": "docker"
@@ -38,7 +48,13 @@
   "packageRules": [
     {
       "description": "Bundle every non-major update into one automergeable pull request. Majors are deliberately excluded so a pending major never blocks the automergeable bundle.",
-      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "pinDigest",
+        "digest"
+      ],
       "groupName": "all non-major dependencies",
       "groupSlug": "all-non-major",
       "automerge": true,
@@ -46,23 +62,33 @@
     },
     {
       "description": "Major updates land one at a time and are merged by a human after review of the migration notes. This rule deliberately does not set groupName: majors are already ungrouped because the bundle above matches non-major types only, and forcing groupName here would split lockstep groups whose members must move together across a major boundary.",
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false,
-      "addLabels": ["major update"]
+      "addLabels": [
+        "major update"
+      ]
     },
     {
       "description": "Lockstep: log4j-core declares its log4j-api dependency with no version of its own and inherits it from log4j-bom, which pins log4j-api to log4j-core's own version (log4j-bom 2.26.1 manages log4j-api at exactly 2.26.1). A build with mismatched Log4j artifacts is unsupported. Non-major updates are already atomic because both artifacts read the same ${log4j.version} property in pom.xml; this rule extends that to majors, which the rule above would otherwise let land one artifact at a time.",
-      "matchDatasources": ["maven"],
+      "matchDatasources": [
+        "maven"
+      ],
       "matchPackageNames": [
         "org.apache.logging.log4j:log4j-api",
         "org.apache.logging.log4j:log4j-core"
       ],
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "groupName": "log4j"
     },
     {
       "description": "The minimum Java version, held in maven.compiler.release in pom.xml. CI no longer builds on one JDK, it builds on every version in the matrix in .github/workflows/ci.yml, so the old lockstep between a single installed JDK and the language level no longer applies: the pom now states the floor and the matrix states the tested set. Raising the floor raises the minimum JRE for the shaded jar this project publishes and means dropping the matrix legs below it, which is a maintainer's decision, so dependencyDashboardApproval holds the move until a human ticks the box rather than opening the pull request unprompted.",
-      "matchDepNames": ["java"],
+      "matchDepNames": [
+        "java"
+      ],
       "groupName": "java minimum version",
       "extractVersion": "^(?<version>\\d+)",
       "versioning": "docker",
