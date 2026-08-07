@@ -61,6 +61,24 @@
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "addLabels": ["major update"]
+    },
+    {
+      "description": "Lockstep: log4j-core declares its log4j-api dependency with no version of its own and inherits it from log4j-bom, which pins log4j-api to log4j-core's own version (log4j-bom 2.26.1 manages log4j-api at exactly 2.26.1). A build with mismatched Log4j artifacts is unsupported. Non-major updates are already atomic because both artifacts read the same ${log4j.version} property in pom.xml; this rule extends that to majors, which the rule above would otherwise let land one artifact at a time.",
+      "matchDatasources": ["maven"],
+      "matchPackageNames": [
+        "org.apache.logging.log4j:log4j-api",
+        "org.apache.logging.log4j:log4j-core"
+      ],
+      "matchUpdateTypes": ["major"],
+      "groupName": "log4j"
+    },
+    {
+      "description": "Lockstep: the JDK the CI job installs and the language level maven-compiler-plugin targets are the same number written in two files. If the pom asks for a release newer than the installed JDK, javac refuses to compile; if it asks for an older one, CI publishes bytecode for a runtime it never ran a test on. Both references are named java, so this one rule moves all three occurrences in a single branch. Raising the language level also raises the minimum JRE for the shaded jar this project publishes, which is a maintainer's decision, so dependencyDashboardApproval holds the move until a human ticks the box rather than opening the pull request unprompted.",
+      "matchDepNames": ["java"],
+      "groupName": "java toolchain",
+      "extractVersion": "^(?<version>\\d+)",
+      "versioning": "docker",
+      "dependencyDashboardApproval": true
     }
   ]
 }
