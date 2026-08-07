@@ -119,17 +119,22 @@
     </build>
 
     <dependencies>
-        <!-- JavaMail API -->
+        <!-- Jakarta Mail. Angus Mail is the reference implementation of the
+             jakarta.mail-api it pulls in, and the successor of the com.sun.mail
+             JavaMail line this project used while it spoke the javax.mail namespace.
+             angus-mail (implementation only) is deliberately preferred over the
+             org.eclipse.angus:jakarta.mail uber jar, which repackages the API classes
+             as well and would put two copies of jakarta.mail.* on the classpath. -->
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>1.6.2</version>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+            <version>2.0.5</version>
         </dependency>
 
         <!-- Log4j. log4j-core requires the exact same version of log4j-api, so the
              two share a single property and are upgraded in lockstep.
-             Log4j 3.x requires Java 17 and is therefore out of reach while this
-             project targets Java 8. -->
+             Log4j 3.x has no stable release yet (3.0.0-beta3 is the newest artifact on
+             Maven Central), so 2.x is still the current line. -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
@@ -154,19 +159,19 @@
         </dependency>
 
         <!-- Real in-process IMAP and SMTP servers, so the tests drive the actual
-             JavaMail protocol implementation instead of a mock of it.
-             GreenMail 1.6.x is the last line that speaks the javax.mail namespace;
-             2.x requires jakarta.mail 2 and Java 11.
-             Its own JavaMail copy is excluded so the tests run against exactly the
-             com.sun.mail:javax.mail version this project ships. -->
+             Jakarta Mail protocol implementation instead of a mock of it.
+             GreenMail 2.x speaks jakarta.mail, which is why this project no longer
+             ships com.sun.mail:javax.mail.
+             Its own uber jar copy of Angus Mail is excluded so the tests run against
+             exactly the org.eclipse.angus:angus-mail version this project ships. -->
         <dependency>
             <groupId>com.icegreen</groupId>
             <artifactId>greenmail</artifactId>
-            <version>1.6.15</version>
+            <version>2.1.11</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>com.sun.mail</groupId>
+                    <groupId>org.eclipse.angus</groupId>
                     <artifactId>jakarta.mail</artifactId>
                 </exclusion>
             </exclusions>
