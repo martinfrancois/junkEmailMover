@@ -2,28 +2,28 @@ package martinfrancois;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.sun.mail.imap.IMAPFolder;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Flags;
+import jakarta.mail.Folder;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.NoSuchProviderException;
+import jakarta.mail.Session;
+import jakarta.mail.Store;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
-import javax.mail.BodyPart;
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.NoSuchProviderException;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.angus.mail.imap.IMAPFolder;
 
 /**
  * Created by François Martin on 10.09.2017.
@@ -162,7 +162,7 @@ public class EmailHandler {
    */
   @VisibleForTesting
   static boolean moveMessages(Folder from, Folder to, Message[] messages, Settings settings) throws MessagingException {
-    // get a list of javamail messages as an array of messages
+    // get a list of Jakarta Mail messages as an array of messages
     if (messages == null) {
       LOGGER.trace("messages is null, copying all messages");
       // get all messages
