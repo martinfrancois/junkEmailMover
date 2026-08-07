@@ -20,8 +20,8 @@ import org.junit.Test;
 /**
  * Drives {@link EmailHandler#main(String[])} end to end.
  *
- * <p>The hosts handed to main point at loopback, where nothing answers on the IMAPS port, so
- * every run gets as far as a real JavaMail {@code imaps} connection attempt and then fails. That
+ * <p>The hosts handed to main point at loopback, where nothing answers on the IMAPS port, so every
+ * run gets as far as a real Jakarta Mail {@code imaps} connection attempt and then fails. That
  * is deliberate: the assertions are made on what the failure produced, which means Guava's
  * {@code Throwables.getStackTraceAsString} and the Log4j configuration in
  * {@code src/main/resources/log4j2.xml} both have to still work for the test to pass.
@@ -156,9 +156,9 @@ public class EmailHandlerMainTest {
 
     String trace = stackTraces.appended();
     // Produced by Guava's Throwables and routed by the "Exception" logger in log4j2.xml.
-    assertTrue(trace, trace.contains("com.sun.mail.util.MailConnectException"));
+    assertTrue(trace, trace.contains("org.eclipse.angus.mail.util.MailConnectException"));
     assertTrue(trace, trace.contains("java.net.ConnectException"));
-    assertTrue(trace, trace.contains("com.sun.mail.imap.IMAPStore.protocolConnect"));
+    assertTrue(trace, trace.contains("org.eclipse.angus.mail.imap.IMAPStore.protocolConnect"));
     assertTrue(trace, trace.contains("martinfrancois.EmailHandler.moveSpam"));
   }
 }

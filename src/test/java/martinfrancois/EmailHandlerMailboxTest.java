@@ -8,20 +8,20 @@ import static org.junit.Assert.assertTrue;
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetup;
-import com.sun.mail.imap.IMAPFolder;
+import jakarta.mail.Folder;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.Store;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import org.eclipse.angus.mail.imap.IMAPFolder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,10 +30,10 @@ import org.junit.Test;
  * Runs the mailbox handling against real IMAP and SMTP servers.
  *
  * <p>GreenMail speaks the actual protocols over a socket, so every assertion here goes through
- * the {@code com.sun.mail} implementation: folder open, APPEND, COPY, the DELETED flag, EXPUNGE,
- * MIME multipart assembly and SMTP delivery. Mocking JavaMail would make these tests pass no
- * matter which version of JavaMail is on the classpath, which is exactly what they are meant to
- * detect.
+ * the {@code org.eclipse.angus.mail} implementation: folder open, APPEND, COPY, the DELETED flag,
+ * EXPUNGE, MIME multipart assembly and SMTP delivery. Mocking Jakarta Mail would make these tests
+ * pass no matter which version of Jakarta Mail is on the classpath, which is exactly what they are
+ * meant to detect.
  */
 public class EmailHandlerMailboxTest {
 
@@ -215,7 +215,7 @@ public class EmailHandlerMailboxTest {
     assertFalse(EmailHandler.forwardMessage(message, settings("this is not an address")));
 
     String trace = stackTraces.appended();
-    assertTrue(trace, trace.contains("javax.mail.internet.AddressException"));
+    assertTrue(trace, trace.contains("jakarta.mail.internet.AddressException"));
   }
 
   @Test
