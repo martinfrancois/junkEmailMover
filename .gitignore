@@ -2,3 +2,11 @@
 /junkEmailMover.iml
 /target/
 /.idea/
+
+# log4j2.xml writes to a relative "logs" directory whenever the application is
+# started from the repository root. The build itself runs from target/.
+/logs/
+
+# maven-shade-plugin is configured not to write this, but a plain `mvn shade:shade`
+# still would.
+/dependency-reduced-pom.xml
