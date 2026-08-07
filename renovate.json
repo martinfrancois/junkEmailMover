@@ -27,21 +27,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "The JDK the CI job installs. No built-in manager reads the java-version input of actions/setup-java.",
-      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
-      "matchStrings": ["java-version:\\s*\"(?<currentValue>[^\"]+)\""],
-      "depNameTemplate": "java",
-      "datasourceTemplate": "java-version",
-      "versioningTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "description": "The language level maven-compiler-plugin targets. The maven manager reads plugin versions but not plugin configuration.",
+      "description": "The minimum language level maven-compiler-plugin targets. The maven manager reads plugin versions but not plugin configuration. There is deliberately no companion manager for .github/workflows: the java-version input is now ${{ matrix.java }}, and the matrix itself is a hand-maintained list of the versions CI was observed to pass on, not a single version that can be bumped.",
       "managerFilePatterns": ["/(^|/)pom\\.xml$/"],
-      "matchStrings": [
-        "<source>(?<currentValue>[^<]+)</source>",
-        "<target>(?<currentValue>[^<]+)</target>"
-      ],
+      "matchStrings": ["<release>(?<currentValue>[^<]+)</release>"],
       "depNameTemplate": "java",
       "datasourceTemplate": "java-version",
       "versioningTemplate": "docker"
@@ -73,9 +61,9 @@
       "groupName": "log4j"
     },
     {
-      "description": "Lockstep: the JDK the CI job installs and the language level maven-compiler-plugin targets are the same number written in two files. If the pom asks for a release newer than the installed JDK, javac refuses to compile; if it asks for an older one, CI publishes bytecode for a runtime it never ran a test on. Both references are named java, so this one rule moves all three occurrences in a single branch. Raising the language level also raises the minimum JRE for the shaded jar this project publishes, which is a maintainer's decision, so dependencyDashboardApproval holds the move until a human ticks the box rather than opening the pull request unprompted.",
+      "description": "The minimum Java version, held in maven.compiler.release in pom.xml. CI no longer builds on one JDK, it builds on every version in the matrix in .github/workflows/ci.yml, so the old lockstep between a single installed JDK and the language level no longer applies: the pom now states the floor and the matrix states the tested set. Raising the floor raises the minimum JRE for the shaded jar this project publishes and means dropping the matrix legs below it, which is a maintainer's decision, so dependencyDashboardApproval holds the move until a human ticks the box rather than opening the pull request unprompted.",
       "matchDepNames": ["java"],
-      "groupName": "java toolchain",
+      "groupName": "java minimum version",
       "extractVersion": "^(?<version>\\d+)",
       "versioning": "docker",
       "dependencyDashboardApproval": true

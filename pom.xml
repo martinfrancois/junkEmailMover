@@ -21,10 +21,17 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.15.0</version>
                 <configuration>
-                    <!-- Same literal as java-version in .github/workflows/ci.yml, which is
-                         what lets renovate.json track and move the two together. -->
-                    <source>8</source>
-                    <target>8</target>
+                    <!-- The lowest version in the CI matrix in .github/workflows/ci.yml, and
+                         the minimum JRE the shaded jar is claimed to run on. renovate.json
+                         tracks this literal.
+                         release, not source/target: source/target still links against the
+                         JDK running the build, so a build on anything newer than 8 "may lead
+                         to class files that cannot run on JDK 8" (javac's own warning), and
+                         the matrix builds on five different JDKs. release sets the bootstrap
+                         class path, so every leg emits the same Java 8 bytecode. On JDK 8,
+                         whose javac predates the release flag, maven-compiler-plugin
+                         translates this back to source 1.8 and target 1.8. -->
+                    <release>8</release>
                 </configuration>
             </plugin>
 
