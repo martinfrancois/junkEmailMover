@@ -146,10 +146,15 @@
             <version>${log4j.version}</version>
         </dependency>
 
+        <!-- Test only. Without the scope this would default to compile, putting
+             junit and its transitive hamcrest-core on the runtime classpath and
+             shading them into the published jar. Nothing in src/main imports
+             junit. -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
