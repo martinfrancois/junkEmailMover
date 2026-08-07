@@ -23,8 +23,8 @@
                 <configuration>
                     <!-- Same literal as java-version in .github/workflows/ci.yml, which is
                          what lets renovate.json track and move the two together. -->
-                    <source>8</source>
-                    <target>8</target>
+                    <source>25</source>
+                    <target>25</target>
                 </configuration>
             </plugin>
 
