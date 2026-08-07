@@ -24,6 +24,29 @@
     "enabled": true,
     "labels": ["security"]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "The JDK the CI job installs. No built-in manager reads the java-version input of actions/setup-java.",
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": ["java-version:\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "java",
+      "datasourceTemplate": "java-version",
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "The language level maven-compiler-plugin targets. The maven manager reads plugin versions but not plugin configuration.",
+      "managerFilePatterns": ["/(^|/)pom\\.xml$/"],
+      "matchStrings": [
+        "<source>(?<currentValue>[^<]+)</source>",
+        "<target>(?<currentValue>[^<]+)</target>"
+      ],
+      "depNameTemplate": "java",
+      "datasourceTemplate": "java-version",
+      "versioningTemplate": "docker"
+    }
+  ],
   "packageRules": [
     {
       "description": "Bundle every non-major update into one automergeable pull request. Majors are deliberately excluded so a pending major never blocks the automergeable bundle.",

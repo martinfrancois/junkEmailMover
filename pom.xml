@@ -21,8 +21,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <!-- Same literal as java-version in .github/workflows/ci.yml, which is
+                         what lets renovate.json track and move the two together. -->
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
 
