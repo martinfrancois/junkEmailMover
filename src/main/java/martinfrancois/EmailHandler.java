@@ -1,5 +1,6 @@
 package martinfrancois;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.sun.mail.imap.IMAPFolder;
 import java.util.Date;
@@ -89,7 +90,8 @@ public class EmailHandler {
 
   }
 
-  private static void moveSpam(Settings settings) {
+  @VisibleForTesting
+  static void moveSpam(Settings settings) {
     LOGGER.info("Trying to connect to host: " + settings.imap.host + " with user: " + settings.imap.username);
     try {
       connect(settings.imap, settings.smtp);
@@ -112,7 +114,8 @@ public class EmailHandler {
     }
   }
 
-  private static IMAPFolder getFolder(Store store, String folderName) throws MessagingException {
+  @VisibleForTesting
+  static IMAPFolder getFolder(Store store, String folderName) throws MessagingException {
     IMAPFolder folder = (IMAPFolder) store.getFolder(folderName);
     if (!folder.isOpen()) {
       folder.open(Folder.READ_WRITE);
@@ -120,7 +123,8 @@ public class EmailHandler {
     return folder;
   }
 
-  private static void connect(Connection imap, Connection smtp) throws MessagingException {
+  @VisibleForTesting
+  static void connect(Connection imap, Connection smtp) throws MessagingException {
     // connect IMAP
     imap.prop = new Properties();
     imap.session = Session.getInstance(imap.prop);
@@ -141,7 +145,8 @@ public class EmailHandler {
     }
   }
 
-  private static void printFolderList(Store store) throws MessagingException {
+  @VisibleForTesting
+  static void printFolderList(Store store) throws MessagingException {
     System.out.println(store);
 
     Folder[] f = store.getDefaultFolder().list();
@@ -155,7 +160,8 @@ public class EmailHandler {
    * Messages needs to belong to the "from" folder. If it is null, all messages will be used.
    * Returns true if successful, false if unsuccessful.
    */
-  private static boolean moveMessages(Folder from, Folder to, Message[] messages, Settings settings) throws MessagingException {
+  @VisibleForTesting
+  static boolean moveMessages(Folder from, Folder to, Message[] messages, Settings settings) throws MessagingException {
     // get a list of javamail messages as an array of messages
     if (messages == null) {
       LOGGER.trace("messages is null, copying all messages");
@@ -185,7 +191,8 @@ public class EmailHandler {
    * Messages needs to belong to the "from" folder. If it is null, all messages will be used.
    * Returns true if successful, false if unsuccessful.
    */
-  private static boolean copyMessages(Folder from, Folder to, Message[] messages) throws MessagingException {
+  @VisibleForTesting
+  static boolean copyMessages(Folder from, Folder to, Message[] messages) throws MessagingException {
     // get counts before the operations
     int fromCount = from.getMessageCount();
     int toCount = to.getMessageCount();
@@ -208,7 +215,8 @@ public class EmailHandler {
     return false;
   }
 
-  private static boolean checkAmount(Folder folder, int expected) throws MessagingException {
+  @VisibleForTesting
+  static boolean checkAmount(Folder folder, int expected) throws MessagingException {
     int threshold = 20;
     int attempt = 0;
     int actual = -1;
@@ -231,7 +239,8 @@ public class EmailHandler {
    * @return true if successful
    * @throws MessagingException
    */
-  private static boolean deleteMessages(Folder folder, Message[] messages) throws MessagingException {
+  @VisibleForTesting
+  static boolean deleteMessages(Folder folder, Message[] messages) throws MessagingException {
     LOGGER.trace("Deleting messages...");
 
     int folderCount = folder.getMessageCount();
@@ -254,7 +263,8 @@ public class EmailHandler {
     return false;
   }
 
-  private static boolean forwardMessage(Message message, Settings settings) {
+  @VisibleForTesting
+  static boolean forwardMessage(Message message, Settings settings) {
     LOGGER.trace("Forwarding Messages...");
     try {
       // Get all the information from the message
@@ -295,7 +305,8 @@ public class EmailHandler {
     return true;
   }
 
-  private static class Connection {
+  @VisibleForTesting
+  static class Connection {
     String host;
     String username;
     String password;
@@ -310,7 +321,8 @@ public class EmailHandler {
     }
   }
 
-  private static class Settings {
+  @VisibleForTesting
+  static class Settings {
     private static final String SUBJECT_PREFIX = "[SPAM] ";
     Connection imap;
     Connection smtp;
