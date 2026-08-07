@@ -18,7 +18,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sun.misc.BASE64Encoder;
 
 /**
  * Created by François Martin on 11.09.2017.
@@ -109,7 +108,11 @@ public class SecurePreferences {
       byte[] byteCipherText = new byte[0];
       byteCipherText = aesCipherForEncryption
           .doFinal(byteDataToEncrypt);
-      encrypted = new BASE64Encoder().encode(byteCipherText);
+      // Must stay symmetric with the java.util.Base64 decoder used in decrypt():
+      // sun.misc.BASE64Encoder wrapped its output every 76 characters, which
+      // Base64.getDecoder() rejects, so any value long enough to wrap could be
+      // stored but never read back again.
+      encrypted = Base64.getEncoder().encodeToString(byteCipherText);
     } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException | NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException e) {
       LOGGER.error("Error during encryption: " + e.toString());
       LOGGER_EXCEPTION.debug(Throwables.getStackTraceAsString(e));
