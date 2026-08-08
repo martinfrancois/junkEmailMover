@@ -130,7 +130,7 @@ mocks, so a dependency upgrade that changes protocol behaviour fails the build r
 
 CI runs that command once per Java version in the table above. The legs report as `test (Java 8)`,
 `test (Java 11)` and so on, and a separate job named `build` depends on them and fails unless every
-leg passed. `build` is the required status check on `master`, so do not rename it: a matrix leg
+leg passed. `build` is the required status check on `main`, so do not rename it: a matrix leg
 cannot take its place, and dropping it would leave the branch with a required check that matches
 no job at all.
 
