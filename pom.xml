@@ -106,9 +106,43 @@
                             <!-- Keep the build from writing dependency-reduced-pom.xml
                                  into the working tree. -->
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <!-- The shaded jar runs from the class path, where a
+                                             module descriptor does nothing, and each dependency's
+                                             descriptor would describe a module the jar is not. -->
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/*/module-info.class</exclude>
+                                        <!-- ManifestResourceTransformer below writes the jar's
+                                             own manifest; the dependencies' manifests would
+                                             only compete with it. -->
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>martinfrancois.EmailHandler</mainClass>
+                                </transformer>
+                                <!-- Several dependencies ship these files under the same name.
+                                     Without merging, shade keeps the first copy and drops the
+                                     licence and notice text of every other dependency. -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/LICENSE</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/LICENSE.md</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/NOTICE</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/NOTICE.md</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/DEPENDENCIES</resource>
                                 </transformer>
                             </transformers>
                         </configuration>
